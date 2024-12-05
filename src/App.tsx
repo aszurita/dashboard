@@ -6,74 +6,60 @@ import ControlWeather from './components/ControlWeather';
 import LineChartWeather from './components/LineChartWeather';
 import { useEffect, useState } from 'react';
 
+interface Item {
+  dateStart: String;
+  dateEnd: String;
+  precipitation: String;
+  humidity: String;
+  clouds: String;
+}
+
 interface Indicator {
   title?: String;
   subtitle?: String;
   value?: String;
 }
 
-
 function App() {
   let [indicators, setIndicators] = useState<Indicator[]>([])
   let [owm, setOWM] = useState(localStorage.getItem("openWeatherMap"))
+  let [items, setItems] = useState<Item[]>([])
+
   useEffect(() => {
-
     let request = async () => {
-
       let savedTextXML = localStorage.getItem("openWeatherMap") || "";
       let expiringTime = localStorage.getItem("expiringTime");
 
-      {/* Obtenga la estampa de tiempo actual */ }
       let nowTime = (new Date()).getTime();
       if (expiringTime === null || nowTime > parseInt(expiringTime)) {
-
-        {/* Request */ }
         let API_KEY = "1603fe1c633d50ecd91d877dc4105993"
         let response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Guayaquil&mode=xml&appid=${API_KEY}`)
         let savedTextXML = await response.text();
 
-        {/* Tiempo de expiración */ }
         let hours = 0.01
         let delay = hours * 3600000
         let expiringTime = nowTime + delay
 
-
-        {/* En el LocalStorage, almacene el texto en la clave openWeatherMap, estampa actual y estampa de tiempo de expiración */ }
         localStorage.setItem("openWeatherMap", savedTextXML)
         localStorage.setItem("expiringTime", expiringTime.toString())
         localStorage.setItem("nowTime", nowTime.toString())
-
-        {/* DateTime */ }
         localStorage.setItem("expiringDateTime", new Date(expiringTime).toString())
         localStorage.setItem("nowDateTime", new Date(nowTime).toString())
 
-        {/* Modificación de la variable de estado mediante la función de actualización */ }
         setOWM(savedTextXML)
-
-
       }
 
-      {/* Valide el procesamiento con el valor de savedTextXML */ }
       if (savedTextXML) {
-
-        {/* XML Parser */ }
         const parser = new DOMParser();
         const xml = parser.parseFromString(savedTextXML, "application/xml");
 
-        {/* Arreglo para agregar los resultados */ }
-
         let dataToIndicators: Indicator[] = new Array<Indicator>();
-
-        {/* 
-          Análisis, extracción y almacenamiento del contenido del XML 
-          en el arreglo de resultados
-        */}
+        let dataToItems: Item[] = new Array<Item>();
 
         let name = xml.getElementsByTagName("name")[0].innerHTML || ""
         dataToIndicators.push({ "title": "Location", "subtitle": "City", "value": name })
 
         let location = xml.getElementsByTagName("location")[1]
-
         let latitude = location.getAttribute("latitude") || ""
         dataToIndicators.push({ "title": "Location", "subtitle": "Latitude", "value": latitude })
 
@@ -83,18 +69,27 @@ function App() {
         let altitude = location.getAttribute("altitude") || ""
         dataToIndicators.push({ "title": "Location", "subtitle": "Altitude", "value": altitude })
 
-        setIndicators(dataToIndicators)
+        const times = xml.getElementsByTagName("time");
+        for (let i = 0; i < Math.min(6, times.length); i++) {
+          const time = times[i];
+          const from = time.getAttribute("from") || "";
+          const to = time.getAttribute("to") || "";
+          const precipitation = time.getElementsByTagName("precipitation")[0]?.getAttribute("probability") || "";
+          const humidity = time.getElementsByTagName("humidity")[0]?.getAttribute("value") || "";
+          const clouds = time.getElementsByTagName("clouds")[0]?.getAttribute("all") || "";
 
+          dataToItems.push({ dateStart: from, dateEnd: to, precipitation, humidity, clouds });
+        }
+
+        setIndicators(dataToIndicators)
+        setItems(dataToItems)
       }
     }
 
     request();
-
   }, [owm])
 
-
   let renderIndicators = () => {
-
     return indicators
       .map(
         (indicator, idx) => (
@@ -120,10 +115,9 @@ function App() {
             <ControlWeather />
           </Grid>
           <Grid size={{ xs: 12, xl: 9 }}>
-            <TableWeather />
+            <TableWeather itemsIn={items} />
           </Grid>
         </Grid>
-
       </Grid>
 
       {/* Gráfico */}
