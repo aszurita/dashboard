@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -18,6 +18,7 @@ import InfoCity from './components/Infocity';
 import LineChartWeather from './components/LineChartWeather';
 import Button from '@mui/material/Button';
 import ForecastButtons from './components/ForecastButtons';
+import ForecastTable from './components/ForecastTable';
 
 
 // Images
@@ -86,7 +87,7 @@ interface WeatherData {
   sunset: Date;
 }
 
-// Agregar esta interface para los datos del pronóstico
+// Modificar la interface para el pronóstico
 interface ForecastData {
   dt: number;
   main: {
@@ -94,10 +95,16 @@ interface ForecastData {
     humidity: number;
   };
   weather: Array<{
-    main: string;
     description: string;
     icon: string;
   }>;
+  clouds: {
+    all: number;
+  };
+  wind: {
+    speed: number;
+    deg: number;
+  };
 }
 
 function App(props: Props) {
@@ -107,8 +114,8 @@ function App(props: Props) {
   const [selectedCity, setSelectedCity] = React.useState<string | null>('Guayaquil');
 
   const [weatherData, setWeatherData] = React.useState<WeatherData | null>(null);
-  const [forecastData, setForecastData] = React.useState<ForecastData[]>([]);
-  const [selectedDay, setSelectedDay] = React.useState<number>(0);
+  const [forecastData, setForecastData] = useState<ForecastData[]>([]);
+  const [selectedDay, setSelectedDay] = useState<number>(0);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -132,8 +139,8 @@ function App(props: Props) {
     }
   };
 
-  // Modificar el fetchWeatherData para incluir el pronóstico
-  const fetchWeatherData = React.useCallback(async (city: string) => {
+  // Modificar la función fetchWeatherData
+  const fetchWeatherData = useCallback(async (city: string) => {
     try {
       const API_KEY = "1603fe1c633d50ecd91d877dc4105993";
       
@@ -181,35 +188,11 @@ function App(props: Props) {
         setWeatherData(weatherData);
       }
 
-      if (forecastData) {
-        // Agrupar y calcular solo el promedio por día
-        const dailyAverages = forecastData.list.reduce((acc: { [key: string]: any }, item) => {
-          const date = new Date(item.dt * 1000).getDate();
-          
-          if (!acc[date]) {
-            acc[date] = {
-              dt: item.dt,
-              weather: item.weather,
-              main: { ...item.main },
-              measurements: []
-            };
-          }
-          
-          acc[date].measurements.push(item.main.temp);
-          
-          // Calcular el promedio
-          acc[date].main.temp = acc[date].measurements.reduce((sum: number, temp: number) => sum + temp, 0) 
-            / acc[date].measurements.length;
-          
-          return acc;
-        }, {});
-
-        // Convertir el objeto a array
-        const dailyForecast = Object.values(dailyAverages);
-        setForecastData(dailyForecast);
+      if (forecastData && forecastData.list) {
+        setForecastData(forecastData.list);
       }
     } catch (error) {
-      console.error("Error fetching weather data:", error);
+      console.error('Error fetching weather data:', error);
     }
   }, []);
 
@@ -218,6 +201,12 @@ function App(props: Props) {
       fetchWeatherData(selectedCity);
     }
   }, [selectedCity, fetchWeatherData]);
+
+  React.useEffect(() => {
+    if (forecastData.length > 0 && selectedDay === null) {
+      setSelectedDay(0); // Asegurarse de que siempre haya un día seleccionado
+    }
+  }, [forecastData]);
 
   // Agregar esto antes del return
   const renderForecastButtons = () => {
@@ -234,8 +223,8 @@ function App(props: Props) {
           return (
             <Button
               key={day.dt}
-              variant={selectedDay === index ? "contained" : "outlined"}
-              onClick={() => setSelectedDay(index)}
+              variant={selectedDay === date.toISOString().split('T')[0] ? "contained" : "outlined"}
+              onClick={() => setSelectedDay(date.toISOString().split('T')[0])}
               sx={{
                 minWidth: '120px',
                 display: 'flex',
@@ -512,6 +501,12 @@ function App(props: Props) {
               selectedDay={selectedDay}
               onDaySelect={setSelectedDay}
             />
+            {forecastData.length > 0 && (
+              <ForecastTable 
+                forecastData={forecastData}
+                selectedDay={selectedDay}
+              />
+            )}
           </Box>
         </Box>
       </Box>
