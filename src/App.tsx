@@ -498,6 +498,16 @@ function App(props: Props) {
           </Box>
 
           <Box sx={{ width: '100%' }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: 2,
+                fontWeight: 600,
+                fontSize: { xs: '1.2rem', sm: '1.5rem' }
+              }}
+            >
+              5-Day Weather Forecast
+            </Typography>
             <ForecastButtons 
               forecastData={forecastData}
               selectedDay={selectedDay}

@@ -71,7 +71,7 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
             }}
           >
             <Typography variant="body2">
-              {displayDate.toLocaleDateString('es-ES', { 
+              {displayDate.toLocaleDateString('en-US', { 
                 weekday: 'short',
                 timeZone: 'UTC'
               }).toUpperCase()}
