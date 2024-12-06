@@ -39,13 +39,14 @@ const InfoCity = ({ data }: { data: WeatherData | null }) => {
       color: 'white',
       borderRadius: 4,
       boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-      height: '100%'
+      height: '100%',
+      gap: 2
     }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" component="h1" sx={{ 
           display: 'flex', 
           alignItems: 'center', 
-          gap: 1,
+          gap: 3,
           mb: 2 
         }}>
           📍 {data.city}
@@ -82,7 +83,7 @@ const InfoCity = ({ data }: { data: WeatherData | null }) => {
         </Box>
       </Box>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid item xs={6} sm={3}>
           <Box sx={{ 
             display: 'flex', 

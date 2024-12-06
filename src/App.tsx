@@ -387,12 +387,20 @@ function App(props: Props) {
             </Box>
           </Box>
         </Box>
-        {/* Aquí va el contenido de tu aplicación */}
+        {/* Aquí va el contenido de tu aplicaci��n */}
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, p: { xs: 2, sm: 5 } }}>
-          <Box sx={{ flex: 1, height: '100%' }}>
+          <Box sx={{ 
+            flex: 1,
+            minHeight: '400px', // Altura fija para ambas tarjetas
+            width: '100%'
+          }}>
             <InfoCity data={weatherData} />
           </Box>
-          <Box sx={{ flex: 1, height: '100%' }}>
+          <Box sx={{ 
+            flex: 1,
+            minHeight: '400px', // Altura fija para ambas tarjetas
+            width: '100%'
+          }}>
             <LineChartWeather 
               latitude={-2.1962} 
               longitude={-79.8862} 
