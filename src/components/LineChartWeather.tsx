@@ -4,6 +4,9 @@ import { LineChart } from '@mui/x-charts/LineChart';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 interface WeatherData {
   time: string[];
@@ -20,6 +23,9 @@ interface Props {
 export default function LineChartWeather({ latitude, longitude }: Props) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [dataType, setDataType] = useState<string>('temperature');
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,12 +96,21 @@ export default function LineChartWeather({ latitude, longitude }: Props) {
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   return (
-    <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+    <Paper sx={{ 
+      p: 2, 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      gap: 2,
+      width: '100%',
+      maxWidth: '100%'
+    }}>
       <ToggleButtonGroup
         value={dataType}
         exclusive
         onChange={handleDataTypeChange}
         aria-label="weather data type"
+        orientation={isMobile ? 'vertical' : 'horizontal'}
       >
         <ToggleButton value="temperature">Temperature</ToggleButton>
         <ToggleButton value="humidity">Humidity</ToggleButton>
@@ -106,22 +121,51 @@ export default function LineChartWeather({ latitude, longitude }: Props) {
         {dataConfig.label}
       </Typography>
 
-      <LineChart
-        width={600}
-        height={300}
-        series={[
-          {
-            data: dataConfig.data,
-            label: dataConfig.label,
-            color: dataConfig.color,
-          },
-        ]}
-        xAxis={[{
-          data: hours,
-          label: 'Hour of Day',
-          scaleType: 'linear',
-        }]}
-      />
+      <Box sx={{ 
+        width: '100%',
+        height: isMobile ? 250 : 300,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative'
+      }}>
+        <LineChart
+          width={undefined}
+          height={undefined}
+          series={[
+            {
+              data: dataConfig.data,
+              label: dataConfig.label,
+              color: dataConfig.color,
+              curve: 'linear',
+            },
+          ]}
+          xAxis={[{
+            data: hours,
+            label: 'Hour of Day',
+            scaleType: 'linear',
+          }]}
+          margin={{ 
+            left: 50,
+            right: 20,
+            top: 20,
+            bottom: 40,
+          }}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100% !important',
+            height: '100% !important',
+            '.MuiChartsAxis-bottom .MuiChartsAxis-tickLabel': {
+              fontSize: isMobile ? '0.75rem' : '0.875rem',
+              transform: 'translateY(-5px)',
+            },
+          }}
+        />
+      </Box>
     </Paper>
   );
 }
