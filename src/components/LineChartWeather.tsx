@@ -22,7 +22,7 @@ interface Props {
 
 export default function LineChartWeather({ latitude, longitude }: Props) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [dataType, setDataType] = useState<string>('temperature');
+  const [dataType, setDataType] = useState<string>('humidity');
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

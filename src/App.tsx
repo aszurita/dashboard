@@ -16,6 +16,8 @@ import TextField from '@mui/material/TextField';
 import './index.css';
 import InfoCity from './components/Infocity';
 import LineChartWeather from './components/LineChartWeather';
+import Button from '@mui/material/Button';
+import ForecastButtons from './components/ForecastButtons';
 
 
 // Images
@@ -42,7 +44,7 @@ const ecuadorProvinces: Record<string, string[]> = {
   'Imbabura': ['Ibarra', 'Otavalo', 'Cotacachi', 'Atuntaqui', 'Pimampiro', 'Urcuquí'],
   'Loja': ['Loja', 'Catamayo', 'Macará', 'Cariamanga', 'Celica', 'Saraguro', 'Sozoranga', 'Gonzanamá', 'Quilanga', 'Espíndola'],
   'Los Ríos': ['Babahoyo', 'Quevedo', 'Ventanas', 'Vinces', 'Buena Fe', 'Puebloviejo', 'Montalvo', 'Mocache', 'Palenque', 'Quinsaloma'],
-  'Manabí': ['Portoviejo', 'Manta', 'Chone', 'Bahía de Caráquez', 'Jipijapa', 'Montecristi', 'El Carmen', 'Sucre', 'Tosagua', 'Santa Ana', 'Paján', 'Pedernales', 'San Vicente', 'Bolívar', 'Jama', 'Jaramijó', 'Junín', 'Olmedo', 'Flavio Alfaro'],
+  'Manab': ['Portoviejo', 'Manta', 'Chone', 'Bahía de Caráquez', 'Jipijapa', 'Montecristi', 'El Carmen', 'Sucre', 'Tosagua', 'Santa Ana', 'Paján', 'Pedernales', 'San Vicente', 'Bolívar', 'Jama', 'Jaramijó', 'Junín', 'Olmedo', 'Flavio Alfaro'],
   'Morona Santiago': ['Macas', 'Gualaquiza', 'Sucúa', 'Limón Indanza', 'Santiago', 'Palora', 'Huamboya', 'San Juan Bosco', 'Taisha', 'Logroño'],
   'Napo': ['Tena', 'Archidona', 'El Chaco', 'Carlos Julio Arosemena Tola', 'Baeza'],
   'Orellana': ['Puerto Francisco de Orellana', 'La Joya de los Sachas', 'Loreto', 'Nuevo Rocafuerte'],
@@ -84,6 +86,20 @@ interface WeatherData {
   sunset: Date;
 }
 
+// Agregar esta interface para los datos del pronóstico
+interface ForecastData {
+  dt: number;
+  main: {
+    temp: number;
+    humidity: number;
+  };
+  weather: Array<{
+    main: string;
+    description: string;
+    icon: string;
+  }>;
+}
+
 function App(props: Props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -91,6 +107,8 @@ function App(props: Props) {
   const [selectedCity, setSelectedCity] = React.useState<string | null>('Guayaquil');
 
   const [weatherData, setWeatherData] = React.useState<WeatherData | null>(null);
+  const [forecastData, setForecastData] = React.useState<ForecastData[]>([]);
+  const [selectedDay, setSelectedDay] = React.useState<number>(0);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -114,46 +132,81 @@ function App(props: Props) {
     }
   };
 
-  // Actualizar el fetchWeatherData para incluir todos los campos necesarios:
+  // Modificar el fetchWeatherData para incluir el pronóstico
   const fetchWeatherData = React.useCallback(async (city: string) => {
     try {
       const API_KEY = "1603fe1c633d50ecd91d877dc4105993";
-      const response = await fetch(
+      
+      // Fetch actual weather
+      const currentResponse = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`
       );
-      const data = await response.json();
-      
-      if (data) {
+      const currentData = await currentResponse.json();
+
+      // Fetch forecast
+      const forecastResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${API_KEY}`
+      );
+      const forecastData = await forecastResponse.json();
+
+      if (currentData) {
         const weatherData: WeatherData = {
           current: {
-            time: new Date(data.dt * 1000),
-            temperature: data.main.temp,
-            humidity: data.main.humidity,
-            feelsLike: data.main.feels_like,
-            description: data.weather[0].description,
-            cloudCover: data.clouds.all,
-            pressure: data.main.pressure,
-            windSpeed: data.wind.speed,
-            windDirection: data.wind.deg,
-            rain: data.rain ? data.rain["1h"] : 0,
-            visibility: data.visibility,
-            tempMax: data.main.temp_max,
-            tempMin: data.main.temp_min,
-            weatherMain: data.weather[0].main,
-            weatherDescription: data.weather[0].description,
-            weatherIcon: data.weather[0].icon
+            time: new Date(currentData.dt * 1000),
+            temperature: currentData.main.temp,
+            humidity: currentData.main.humidity,
+            feelsLike: currentData.main.feels_like,
+            description: currentData.weather[0].description,
+            cloudCover: currentData.clouds.all,
+            pressure: currentData.main.pressure,
+            windSpeed: currentData.wind.speed,
+            windDirection: currentData.wind.deg,
+            rain: currentData.rain ? currentData.rain["1h"] : 0,
+            visibility: currentData.visibility,
+            tempMax: currentData.main.temp_max,
+            tempMin: currentData.main.temp_min,
+            weatherMain: currentData.weather[0].main,
+            weatherDescription: currentData.weather[0].description,
+            weatherIcon: currentData.weather[0].icon
           },
           coordinates: {
-            latitude: data.coord.lat,
-            longitude: data.coord.lon
+            latitude: currentData.coord.lat,
+            longitude: currentData.coord.lon
           },
-          city: data.name,
-          sunrise: new Date(data.sys.sunrise * 1000),
-          sunset: new Date(data.sys.sunset * 1000)
+          city: currentData.name,
+          sunrise: new Date(currentData.sys.sunrise * 1000),
+          sunset: new Date(currentData.sys.sunset * 1000)
         };
 
         setWeatherData(weatherData);
-        
+      }
+
+      if (forecastData) {
+        // Agrupar y calcular solo el promedio por día
+        const dailyAverages = forecastData.list.reduce((acc: { [key: string]: any }, item) => {
+          const date = new Date(item.dt * 1000).getDate();
+          
+          if (!acc[date]) {
+            acc[date] = {
+              dt: item.dt,
+              weather: item.weather,
+              main: { ...item.main },
+              measurements: []
+            };
+          }
+          
+          acc[date].measurements.push(item.main.temp);
+          
+          // Calcular el promedio
+          acc[date].main.temp = acc[date].measurements.reduce((sum: number, temp: number) => sum + temp, 0) 
+            / acc[date].measurements.length;
+          
+          return acc;
+        }, {});
+
+        // Convertir el objeto a array
+        const dailyForecast = Object.values(dailyAverages);
+        setForecastData(dailyForecast);
       }
     } catch (error) {
       console.error("Error fetching weather data:", error);
@@ -165,6 +218,50 @@ function App(props: Props) {
       fetchWeatherData(selectedCity);
     }
   }, [selectedCity, fetchWeatherData]);
+
+  // Agregar esto antes del return
+  const renderForecastButtons = () => {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        gap: 2, 
+        overflowX: 'auto', 
+        p: 2,
+        '&::-webkit-scrollbar': { display: 'none' }
+      }}>
+        {forecastData.map((day, index) => {
+          const date = new Date(day.dt * 1000);
+          return (
+            <Button
+              key={day.dt}
+              variant={selectedDay === index ? "contained" : "outlined"}
+              onClick={() => setSelectedDay(index)}
+              sx={{
+                minWidth: '120px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+                p: 2,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <Typography variant="body2">
+                {date.toLocaleDateString('es-ES', { weekday: 'short' })}
+              </Typography>
+              <img 
+                src={`http://openweathermap.org/img/w/${day.weather[0].icon}.png`}
+                alt={day.weather[0].description}
+                style={{ width: 40, height: 40 }}
+              />
+              <Typography variant="body2">
+                {Math.round(day.main.temp)}°C
+              </Typography>
+            </Button>
+          );
+        })}
+      </Box>
+    );
+  };
 
   const drawer = (
     <Box sx={{ textAlign: 'center', height: '100%', bgcolor: '#2196f3', color: 'white' }}>
@@ -387,23 +484,33 @@ function App(props: Props) {
             </Box>
           </Box>
         </Box>
-        {/* Aquí va el contenido de tu aplicaci��n */}
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, p: { xs: 2, sm: 5 } }}>
-          <Box sx={{ 
-            flex: 1,
-            minHeight: '400px', // Altura fija para ambas tarjetas
-            width: '100%'
-          }}>
-            <InfoCity data={weatherData} />
+
+        <Box sx={{ p: { xs: 2, sm: 5 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+            <Box sx={{ 
+              flex: 1,
+              minHeight: '400px',
+              width: '100%'
+            }}>
+              <InfoCity data={weatherData} />
+            </Box>
+            <Box sx={{ 
+              flex: 1,
+              minHeight: '400px',
+              width: '100%'
+            }}>
+              <LineChartWeather 
+                latitude={weatherData?.coordinates.latitude ?? -2.1962} 
+                longitude={weatherData?.coordinates.longitude ?? -79.8862} 
+              />
+            </Box>
           </Box>
-          <Box sx={{ 
-            flex: 1,
-            minHeight: '400px', // Altura fija para ambas tarjetas
-            width: '100%'
-          }}>
-            <LineChartWeather 
-              latitude={-2.1962} 
-              longitude={-79.8862} 
+
+          <Box sx={{ width: '100%' }}>
+            <ForecastButtons 
+              forecastData={forecastData}
+              selectedDay={selectedDay}
+              onDaySelect={setSelectedDay}
             />
           </Box>
         </Box>
