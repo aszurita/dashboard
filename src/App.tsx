@@ -15,7 +15,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import './index.css';
 import InfoCity from './components/Infocity';
-import { fetchWeatherApi } from 'openmeteo';
+import LineChartWeather from './components/LineChartWeather';
 
 
 // Images
@@ -55,26 +55,33 @@ const ecuadorProvinces: Record<string, string[]> = {
   'Zamora Chinchipe': ['Zamora', 'Yantzaza', 'Nangaritza', 'Centinela del Cóndor', 'Palanda', 'Chinchipe', 'El Pangui', 'Paquisha'],
 };
 
-// Actualizar la interfaz WeatherData
+// Actualizar la interface WeatherData para que coincida con InfoCity
 interface WeatherData {
   current: {
     time: Date;
-    temperature2m: number;
-    relativeHumidity2m: number;
-    apparentTemperature: number;
-    isDay: number;
+    temperature: number;
+    humidity: number;
+    feelsLike: number;
+    description: string;
     cloudCover: number;
-    pressureMsl: number;
-    surfacePressure: number;
-    windSpeed10m: number;
-    windDirection10m: number;
-    windGusts10m: number;
+    pressure: number;
+    windSpeed: number;
+    windDirection: number;
+    rain?: number;
+    visibility: number;
+    tempMax?: number;
+    tempMin?: number;
+    weatherMain: string;
+    weatherDescription: string;
+    weatherIcon: string;
   };
-  coordinates?: {
+  coordinates: {
     latitude: number;
     longitude: number;
   };
-  city: string; // Añadida la propiedad city
+  city: string;
+  sunrise: Date;
+  sunset: Date;
 }
 
 function App(props: Props) {
@@ -107,49 +114,46 @@ function App(props: Props) {
     }
   };
 
-  // Actualizar el fetchWeatherData para incluir la ciudad
+  // Actualizar el fetchWeatherData para incluir todos los campos necesarios:
   const fetchWeatherData = React.useCallback(async (city: string) => {
     try {
       const API_KEY = "1603fe1c633d50ecd91d877dc4105993";
-      const geoResponse = await fetch(
-        `http://api.openweathermap.org/geo/1.0/direct?q=${city},EC&limit=1&appid=${API_KEY}`
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`
       );
-      const geoData = await geoResponse.json();
+      const data = await response.json();
       
-      if (geoData && geoData.length > 0) {
-        const { lat: latitude, lon: longitude } = geoData[0];
-        
-        const params = {
-          latitude,
-          longitude,
-          current: ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "is_day", "cloud_cover", "pressure_msl", "surface_pressure", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m"]
-        };
-        
-        const responses = await fetchWeatherApi("https://api.open-meteo.com/v1/forecast", params);
-        const response = responses[0];
-        
-        const utcOffsetSeconds = response.utcOffsetSeconds();
-        const current = response.current()!;
-
+      if (data) {
         const weatherData: WeatherData = {
           current: {
-            time: new Date((Number(current.time()) + utcOffsetSeconds) * 1000),
-            temperature2m: current.variables(0)!.value(),
-            relativeHumidity2m: current.variables(1)!.value(),
-            apparentTemperature: current.variables(2)!.value(),
-            isDay: current.variables(3)!.value(),
-            cloudCover: current.variables(4)!.value(),
-            pressureMsl: current.variables(5)!.value(),
-            surfacePressure: current.variables(6)!.value(),
-            windSpeed10m: current.variables(7)!.value(),
-            windDirection10m: current.variables(8)!.value(),
-            windGusts10m: current.variables(9)!.value(),
+            time: new Date(data.dt * 1000),
+            temperature: data.main.temp,
+            humidity: data.main.humidity,
+            feelsLike: data.main.feels_like,
+            description: data.weather[0].description,
+            cloudCover: data.clouds.all,
+            pressure: data.main.pressure,
+            windSpeed: data.wind.speed,
+            windDirection: data.wind.deg,
+            rain: data.rain ? data.rain["1h"] : 0,
+            visibility: data.visibility,
+            tempMax: data.main.temp_max,
+            tempMin: data.main.temp_min,
+            weatherMain: data.weather[0].main,
+            weatherDescription: data.weather[0].description,
+            weatherIcon: data.weather[0].icon
           },
-          coordinates: { latitude, longitude },
-          city: city
+          coordinates: {
+            latitude: data.coord.lat,
+            longitude: data.coord.lon
+          },
+          city: data.name,
+          sunrise: new Date(data.sys.sunrise * 1000),
+          sunset: new Date(data.sys.sunset * 1000)
         };
 
         setWeatherData(weatherData);
+        
       }
     } catch (error) {
       console.error("Error fetching weather data:", error);
@@ -385,11 +389,14 @@ function App(props: Props) {
         </Box>
         {/* Aquí va el contenido de tu aplicación */}
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, p: { xs: 2, sm: 5 } }}>
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, height: '100%' }}>
             <InfoCity data={weatherData} />
           </Box>
-          <Box sx={{ flex: 1 }}>
-            {/* Aquí va el otro contenido */}
+          <Box sx={{ flex: 1, height: '100%' }}>
+            <LineChartWeather 
+              latitude={-2.1962} 
+              longitude={-79.8862} 
+            />
           </Box>
         </Box>
       </Box>

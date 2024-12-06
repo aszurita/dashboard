@@ -4,24 +4,21 @@ import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import AirIcon from '@mui/icons-material/Air';
 import CompressIcon from '@mui/icons-material/Compress';
 import CloudIcon from '@mui/icons-material/Cloud';
+import DeviceThermostatIcon from '@mui/icons-material/DeviceThermostat';
 
 interface WeatherData {
   current: {
-    time: Date;
-    temperature2m: number;
-    relativeHumidity2m: number;
-    apparentTemperature: number;
-    isDay: number;
+    temperature: number;
+    humidity: number;
     cloudCover: number;
-    pressureMsl: number;
-    surfacePressure: number;
-    windSpeed10m: number;
-    windDirection10m: number;
-    windGusts10m: number;
-  };
-  coordinates?: {
-    latitude: number;
-    longitude: number;
+    pressure: number;
+    windSpeed: number;
+    windDirection: number;
+    tempMax?: number;
+    tempMin?: number;
+    weatherMain: string;
+    weatherDescription: string;
+    weatherIcon: string;
   };
   city: string;
 }
@@ -41,7 +38,8 @@ const InfoCity = ({ data }: { data: WeatherData | null }) => {
       background: 'linear-gradient(135deg, #64B5F6 0%, #2196F3 100%)',
       color: 'white',
       borderRadius: 4,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+      boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+      height: '100%'
     }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" component="h1" sx={{ 
@@ -53,15 +51,35 @@ const InfoCity = ({ data }: { data: WeatherData | null }) => {
           📍 {data.city}
         </Typography>
 
-        <Typography variant="h2" sx={{ 
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <img 
+            src={`http://openweathermap.org/img/wn/${data.current.weatherIcon}@2x.png`}
+            alt={data.current.weatherDescription}
+            style={{ width: 50, height: 50 }}
+          />
+          <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+            {data.current.temperature.toFixed(2)}°C
+          </Typography>
+        </Box>
+
+        <Typography variant="h6" sx={{ 
+          textTransform: 'capitalize',
+          mb: 2
         }}>
-          <ThermostatIcon sx={{ fontSize: 40 }} />
-          {parseFloat(data.current.temperature2m.toString()).toFixed(2)}°C
+          {data.current.weatherDescription}
         </Typography>
+
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2,
+          mb: 3 
+        }}>
+          <DeviceThermostatIcon />
+          <Typography>
+            Max: {data.current.tempMax?.toFixed(1)}°C / Min: {data.current.tempMin?.toFixed(1)}°C
+          </Typography>
+        </Box>
       </Box>
 
       <Grid container spacing={2}>
@@ -74,7 +92,7 @@ const InfoCity = ({ data }: { data: WeatherData | null }) => {
           }}>
             <WaterDropIcon />
             <Typography variant="body2">Humidity</Typography>
-            <Typography variant="h6">{data.current.relativeHumidity2m}%</Typography>
+            <Typography variant="h6">{data.current.humidity}%</Typography>
           </Box>
         </Grid>
 
@@ -88,10 +106,10 @@ const InfoCity = ({ data }: { data: WeatherData | null }) => {
             <AirIcon />
             <Typography variant="body2">Wind</Typography>
             <Typography variant="h6">
-              {parseFloat(data.current.windSpeed10m.toString()).toFixed(2)} km/h
+              {data.current.windSpeed.toFixed(2)} km/h
             </Typography>
             <Typography variant="body2">
-              {getWindDirection(data.current.windDirection10m)}
+              {getWindDirection(data.current.windDirection)}
             </Typography>
           </Box>
         </Grid>
@@ -118,7 +136,7 @@ const InfoCity = ({ data }: { data: WeatherData | null }) => {
           }}>
             <CompressIcon />
             <Typography variant="body2">Pressure</Typography>
-            <Typography variant="h6">{parseFloat(data.current.pressureMsl.toString()).toFixed(2)} hPa</Typography>
+            <Typography variant="h6">{data.current.pressure} hPa</Typography>
           </Box>
         </Grid>
       </Grid>
