@@ -40,12 +40,18 @@ const ForecastTable: React.FC<ForecastTableProps> = ({ forecastData, selectedDay
     return <Box sx={{ p: 2 }}>No hay datos disponibles</Box>;
   }
 
-  // Filtrar pronósticos para el día seleccionado
-  const dayForecasts = forecastData.filter(forecast => {
-    if (!forecast || !forecast.dt) return false;
-    const forecastDate = new Date(forecast.dt * 1000).toISOString().split('T')[0];
-    return forecastDate === selectedDay;
-  });
+  // Filtrar pronósticos para el día seleccionado y ordenarlos por timestamp
+  const dayForecasts = forecastData
+    .filter(forecast => {
+      if (!forecast || !forecast.dt) return false;
+      const forecastDate = new Date(forecast.dt * 1000).toISOString().split('T')[0];
+      return forecastDate === selectedDay;
+    })
+    .sort((a, b) => {
+      const hourA = new Date(a.dt * 1000).getHours();
+      const hourB = new Date(b.dt * 1000).getHours();
+      return hourA - hourB;
+    });
 
   if (dayForecasts.length === 0) {
     return <Box sx={{ p: 2 }}>No hay datos disponibles para este día</Box>;
@@ -70,7 +76,8 @@ const ForecastTable: React.FC<ForecastTableProps> = ({ forecastData, selectedDay
               <TableCell>
                 {new Date(forecast.dt * 1000).toLocaleTimeString([], { 
                   hour: '2-digit', 
-                  minute: '2-digit' 
+                  minute: '2-digit',
+                  hour12: false
                 })}
               </TableCell>
               <TableCell>

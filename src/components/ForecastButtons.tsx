@@ -25,18 +25,32 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
   selectedDay,
   onDaySelect
 }) => {
+  // Obtener la fecha actual y mañana
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
   // Agrupar pronósticos por día y calcular promedios
   const dailyForecasts = forecastData.reduce((acc, forecast) => {
-    const date = new Date(forecast.dt * 1000).toISOString().split('T')[0];
-    if (!acc[date]) {
-      acc[date] = {
+    const forecastDate = new Date(forecast.dt * 1000);
+    forecastDate.setHours(0, 0, 0, 0);
+    
+    // Solo incluir días a partir de mañana
+    if (forecastDate < tomorrow) {
+      return acc;
+    }
+
+    const dateStr = forecastDate.toISOString().split('T')[0];
+    if (!acc[dateStr]) {
+      acc[dateStr] = {
         temps: [],
         icon: forecast.weather[0].icon,
         description: forecast.weather[0].description,
         dt: forecast.dt
       };
     }
-    acc[date].temps.push(forecast.main.temp);
+    acc[dateStr].temps.push(forecast.main.temp);
     return acc;
   }, {} as Record<string, { temps: number[], icon: string, description: string, dt: number }>);
 
