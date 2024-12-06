@@ -25,23 +25,10 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
   selectedDay,
   onDaySelect
 }) => {
-  // Obtener la fecha actual y mañana
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  // Agrupar pronósticos por día y calcular promedios
   const dailyForecasts = forecastData.reduce((acc, forecast) => {
     const forecastDate = new Date(forecast.dt * 1000);
-    forecastDate.setHours(0, 0, 0, 0);
-    
-    // Solo incluir días a partir de mañana
-    if (forecastDate < tomorrow) {
-      return acc;
-    }
-
     const dateStr = forecastDate.toISOString().split('T')[0];
+    
     if (!acc[dateStr]) {
       acc[dateStr] = {
         temps: [],
@@ -54,6 +41,9 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
     return acc;
   }, {} as Record<string, { temps: number[], icon: string, description: string, dt: number }>);
 
+  // Agregar log para ver las fechas
+  console.log('Fechas de los botones:', Object.keys(dailyForecasts));
+
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -64,7 +54,7 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
     }}>
       {Object.entries(dailyForecasts).map(([date, data]) => {
         const avgTemp = data.temps.reduce((sum, temp) => sum + temp, 0) / data.temps.length;
-        const displayDate = new Date(date);
+        const displayDate = new Date(date + 'T00:00:00');
         
         return (
           <Button
@@ -81,7 +71,10 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
             }}
           >
             <Typography variant="body2">
-              {displayDate.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase()}
+              {displayDate.toLocaleDateString('es-ES', { 
+                weekday: 'short',
+                timeZone: 'UTC'
+              }).toUpperCase()}
             </Typography>
             <img 
               src={`http://openweathermap.org/img/w/${data.icon}.png`}
