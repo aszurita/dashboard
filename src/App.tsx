@@ -115,7 +115,7 @@ function App(props: Props) {
 
   const [weatherData, setWeatherData] = React.useState<WeatherData | null>(null);
   const [forecastData, setForecastData] = useState<ForecastData[]>([]);
-  const [selectedDay, setSelectedDay] = useState<number>(0);
+  const [selectedDay, setSelectedDay] = useState<string>('');
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -202,9 +202,11 @@ function App(props: Props) {
     }
   }, [selectedCity, fetchWeatherData]);
 
-  React.useEffect(() => {
-    if (forecastData.length > 0 && selectedDay === null) {
-      setSelectedDay(0); // Asegurarse de que siempre haya un día seleccionado
+  useEffect(() => {
+    if (forecastData.length > 0 && !selectedDay) {
+      // Seleccionar el primer día disponible
+      const firstDate = new Date(forecastData[0].dt * 1000).toISOString().split('T')[0];
+      setSelectedDay(firstDate);
     }
   }, [forecastData]);
 

@@ -16,8 +16,8 @@ interface ForecastData {
 
 interface ForecastButtonsProps {
   forecastData: ForecastData[];
-  selectedDay: number;
-  onDaySelect: (index: number) => void;
+  selectedDay: string;
+  onDaySelect: (date: string) => void;
 }
 
 const ForecastButtons: React.FC<ForecastButtonsProps> = ({
@@ -27,7 +27,7 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
 }) => {
   // Agrupar pronósticos por día y calcular promedios
   const dailyForecasts = forecastData.reduce((acc, forecast) => {
-    const date = new Date(forecast.dt * 1000).toLocaleDateString();
+    const date = new Date(forecast.dt * 1000).toISOString().split('T')[0];
     if (!acc[date]) {
       acc[date] = {
         temps: [],
@@ -40,52 +40,46 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
     return acc;
   }, {} as Record<string, { temps: number[], icon: string, description: string, dt: number }>);
 
-  // Convertir el objeto en array y calcular promedios
-  const uniqueDays = Object.entries(dailyForecasts).map(([date, data]) => ({
-    date,
-    avgTemp: data.temps.reduce((sum, temp) => sum + temp, 0) / data.temps.length,
-    icon: data.icon,
-    description: data.description,
-    dt: data.dt
-  }));
-
   return (
     <Box sx={{ 
       display: 'flex', 
       gap: 2, 
       overflowX: 'auto', 
       p: 2,
-      '&::-webkit-scrollbar': { display: 'none' },
-      '-ms-overflow-style': 'none',
-      'scrollbar-width': 'none'
+      '&::-webkit-scrollbar': { display: 'none' }
     }}>
-      {uniqueDays.map((day, index) => (
-        <Button
-          key={day.dt}
-          variant={selectedDay === index ? "contained" : "outlined"}
-          onClick={() => onDaySelect(index)}
-          sx={{
-            minWidth: '120px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1,
-            p: 2,
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Typography variant="body2">
-            {new Date(day.dt * 1000).toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase()}
-          </Typography>
-          <img 
-            src={`http://openweathermap.org/img/w/${day.icon}.png`}
-            alt={day.description}
-            style={{ width: 40, height: 40 }}
-          />
-          <Typography variant="body2">
-            {Math.round(day.avgTemp)}°C
-          </Typography>
-        </Button>
-      ))}
+      {Object.entries(dailyForecasts).map(([date, data]) => {
+        const avgTemp = data.temps.reduce((sum, temp) => sum + temp, 0) / data.temps.length;
+        const displayDate = new Date(date);
+        
+        return (
+          <Button
+            key={date}
+            variant={selectedDay === date ? "contained" : "outlined"}
+            onClick={() => onDaySelect(date)}
+            sx={{
+              minWidth: '120px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              p: 2,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Typography variant="body2">
+              {displayDate.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase()}
+            </Typography>
+            <img 
+              src={`http://openweathermap.org/img/w/${data.icon}.png`}
+              alt={data.description}
+              style={{ width: 40, height: 40 }}
+            />
+            <Typography variant="body2">
+              {Math.round(avgTemp)}°C
+            </Typography>
+          </Button>
+        );
+      })}
     </Box>
   );
 };

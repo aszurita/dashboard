@@ -10,7 +10,7 @@ import {
   Box
 } from '@mui/material';
 
-interface WeatherData {
+interface ForecastData {
   dt: number;
   main: {
     temp: number;
@@ -27,24 +27,29 @@ interface WeatherData {
     speed: number;
     deg: number;
   };
-  dt_txt: string;
 }
 
 interface ForecastTableProps {
-  forecastData: WeatherData[];
-  selectedDay: number;
+  forecastData: ForecastData[];
+  selectedDay: string;
 }
 
 const ForecastTable: React.FC<ForecastTableProps> = ({ forecastData, selectedDay }) => {
-  if (!forecastData || forecastData.length === 0) {
+  // Validación inicial
+  if (!forecastData || !Array.isArray(forecastData) || forecastData.length === 0 || !selectedDay) {
     return <Box sx={{ p: 2 }}>No hay datos disponibles</Box>;
   }
 
-  // Filtrar las entradas del día seleccionado
-  const selectedDate = new Date(forecastData[selectedDay].dt * 1000).toISOString().split('T')[0];
-  const dayForecasts = forecastData.filter(item => 
-    new Date(item.dt * 1000).toISOString().split('T')[0] === selectedDate
-  );
+  // Filtrar pronósticos para el día seleccionado
+  const dayForecasts = forecastData.filter(forecast => {
+    if (!forecast || !forecast.dt) return false;
+    const forecastDate = new Date(forecast.dt * 1000).toISOString().split('T')[0];
+    return forecastDate === selectedDay;
+  });
+
+  if (dayForecasts.length === 0) {
+    return <Box sx={{ p: 2 }}>No hay datos disponibles para este día</Box>;
+  }
 
   return (
     <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -71,7 +76,7 @@ const ForecastTable: React.FC<ForecastTableProps> = ({ forecastData, selectedDay
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <img 
-                    src={`https://openweathermap.org/img/w/${forecast.weather[0].icon}.png`}
+                    src={`http://openweathermap.org/img/w/${forecast.weather[0].icon}.png`}
                     alt={forecast.weather[0].description}
                     style={{ width: 30, height: 30 }}
                   />
