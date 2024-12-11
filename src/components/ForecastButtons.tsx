@@ -48,8 +48,6 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
     return acc;
   }, {} as Record<string, { temps: number[], icon: string, description: string, dt: number }>);
 
-  // Agregar log para ver las fechas
-  console.log('Fechas de los botones:', Object.keys(dailyForecasts));
 
   return (
     <Box sx={{ 
@@ -69,10 +67,10 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
             variant={selectedDay === date ? "contained" : "outlined"}
             onClick={() => onDaySelect(date)}
             sx={{
-              minWidth: '120px',
+              minWidth: '150px',
               display: 'flex',
               flexDirection: 'column',
-              gap: 1,
+              gap: 0.5,
               p: 2,
               whiteSpace: 'nowrap'
             }}
@@ -80,6 +78,8 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
             <Typography variant="body2">
               {displayDate.toLocaleDateString('en-US', { 
                 weekday: 'short',
+                month: 'short',
+                day: 'numeric',
                 timeZone: 'UTC'
               }).toUpperCase()}
             </Typography>
@@ -88,9 +88,30 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
               alt={data.description}
               style={{ width: 40, height: 40 }}
             />
-            <Typography variant="body2">
+            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
               {Math.round(avgTemp)}°C
             </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              {data.description}
+            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center',
+              gap: 0.5,
+              mt: 1,
+              fontSize: '0.75rem'
+            }}>
+              <Typography variant="caption">
+                💨 {Math.round(forecastData.find(f => f.dt === data.dt)?.wind.speed || 0)} m/s
+              </Typography>
+              <Typography variant="caption">
+                ☁️ {forecastData.find(f => f.dt === data.dt)?.clouds.all || 0}%
+              </Typography>
+              <Typography variant="caption">
+                💧 {Math.round(forecastData.find(f => f.dt === data.dt)?.main.humidity || 0)}%
+              </Typography>
+            </Box>
           </Button>
         );
       })}
