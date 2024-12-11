@@ -28,7 +28,11 @@ const getWindDirection = (degrees: number): string => {
   return directions[index];
 };
 
-const InfoCity = ({ data }: { data: WeatherData | null }) => {
+interface InfoCityProps {
+  data: WeatherData | null;
+}
+
+function InfoCity({ data }: InfoCityProps): JSX.Element | null {
   if (!data) return null;
 
   return (
@@ -142,6 +146,6 @@ const InfoCity = ({ data }: { data: WeatherData | null }) => {
       </Grid>
     </Card>
   );
-};
+}
 
 export default InfoCity;

@@ -27,11 +27,9 @@ interface ForecastButtonsProps {
   onDaySelect: (date: string) => void;
 }
 
-const ForecastButtons: React.FC<ForecastButtonsProps> = ({
-  forecastData,
-  selectedDay,
-  onDaySelect
-}) => {
+function ForecastButtons(props: ForecastButtonsProps): JSX.Element {
+  const { forecastData, selectedDay, onDaySelect } = props;
+  
   const dailyForecasts = forecastData.reduce((acc, forecast) => {
     const forecastDate = new Date(forecast.dt * 1000);
     const dateStr = forecastDate.toISOString().split('T')[0];
@@ -117,6 +115,6 @@ const ForecastButtons: React.FC<ForecastButtonsProps> = ({
       })}
     </Box>
   );
-};
+}
 
 export default ForecastButtons; 
