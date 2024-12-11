@@ -16,9 +16,11 @@ import TextField from '@mui/material/TextField';
 import './index.css';
 import InfoCity from './components/Infocity';
 import LineChartWeather from './components/LineChartWeather';
-import Button from '@mui/material/Button';
 import ForecastButtons from './components/ForecastButtons';
 import ForecastTable from './components/ForecastTable';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import Container from '@mui/material/Container';
 
 
 // Images
@@ -90,6 +92,7 @@ interface WeatherData {
 // Modificar la interface para el pronóstico
 interface ForecastData {
   dt: number;
+  dt_txt: string;
   main: {
     temp: number;
     humidity: number;
@@ -109,11 +112,11 @@ interface ForecastData {
 
 function App(props: Props) {
   const { window } = props;
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [selectedProvince, setSelectedProvince] = React.useState<string | null>('Guayas');
-  const [selectedCity, setSelectedCity] = React.useState<string | null>('Guayaquil');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [selectedProvince, setSelectedProvince] = useState<string | null>('Guayas');
+  const [selectedCity, setSelectedCity] = useState<string | null>('Guayaquil');
 
-  const [weatherData, setWeatherData] = React.useState<WeatherData | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [forecastData, setForecastData] = useState<ForecastData[]>([]);
   const [selectedDay, setSelectedDay] = useState<string>('');
 
@@ -121,7 +124,7 @@ function App(props: Props) {
     setMobileOpen((prevState) => !prevState);
   };
 
-  const handleProvinceChange = (event: React.SyntheticEvent, newValue: string | null) => {
+  const handleProvinceChange = (_event: React.SyntheticEvent, newValue: string | null) => {
     if (newValue) {
       setSelectedProvince(newValue);
       setSelectedCity(ecuadorProvinces[newValue][0]);
@@ -131,7 +134,7 @@ function App(props: Props) {
     }
   };
 
-  const handleCityChange = (event: React.SyntheticEvent, newValue: string | null) => {
+  const handleCityChange = (_event: React.SyntheticEvent, newValue: string | null) => {
     if (newValue) {
       setSelectedCity(newValue);
     } else if (selectedProvince) {
@@ -210,155 +213,164 @@ function App(props: Props) {
     }
   }, [forecastData]);
 
-  // Agregar esto antes del return
-  const renderForecastButtons = () => {
-    return (
-      <Box sx={{ 
-        display: 'flex', 
-        gap: 2, 
-        overflowX: 'auto', 
-        p: 2,
-        '&::-webkit-scrollbar': { display: 'none' }
-      }}>
-        {forecastData.map((day, index) => {
-          const date = new Date(day.dt * 1000);
-          return (
-            <Button
-              key={day.dt}
-              variant={selectedDay === date.toISOString().split('T')[0] ? "contained" : "outlined"}
-              onClick={() => setSelectedDay(date.toISOString().split('T')[0])}
-              sx={{
-                minWidth: '120px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1,
-                p: 2,
-                whiteSpace: 'nowrap'
-              }}
-            >
-              <Typography variant="body2">
-                {date.toLocaleDateString('es-ES', { weekday: 'short' })}
-              </Typography>
-              <img 
-                src={`http://openweathermap.org/img/w/${day.weather[0].icon}.png`}
-                alt={day.weather[0].description}
-                style={{ width: 40, height: 40 }}
-              />
-              <Typography variant="body2">
-                {Math.round(day.main.temp)}°C
-              </Typography>
-            </Button>
-          );
-        })}
-      </Box>
-    );
-  };
-
   const drawer = (
-    <Box sx={{ textAlign: 'center', height: '100%', bgcolor: '#2196f3', color: 'white' }}>
-      <Box sx={{ 
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '150px'
-      }}>
-        <img 
-          src={logo} 
-          alt="Logo"
-          style={{
-            maxHeight: '100%',
-            width: 'auto'
-          }}
-        />
+    <Box sx={{ 
+      textAlign: 'center', 
+      height: '100%', 
+      bgcolor: '#2196f3', 
+      color: 'white', 
+      display: 'flex', 
+      flexDirection: 'column' 
+    }}>
+      <Box sx={{ flexGrow: 0 }}>
+        <Box sx={{ 
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '150px'
+        }}>
+          <img 
+            src={logo} 
+            alt="Logo"
+            style={{
+              maxHeight: '100%',
+              width: 'auto'
+            }}
+          />
+        </Box>
+        <Divider />
+        <List>
+          <ListItem>
+            <Typography variant="h6" sx={{ textAlign: 'left', color: 'white', fontWeight: 'bold' }}>
+              Selection
+            </Typography>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton sx={{ 
+              flexDirection: 'column', 
+              alignItems: 'flex-start',
+              width: '100%',
+              px: 2
+            }}>
+              <Autocomplete
+                className='mb-2'
+                disablePortal
+                options={Object.keys(ecuadorProvinces)}
+                value={selectedProvince}
+                onChange={handleProvinceChange}
+                sx={{ 
+                  width: '100%',
+                  borderRadius: '4px',
+                  color: 'white',
+                  mb: 2
+                }}
+                renderInput={(params) => 
+                  <TextField 
+                    {...params} 
+                    label="Province" 
+                    variant="outlined"
+                    sx={{
+                      '& .MuiInputLabel-root': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiOutlinedInput-root': {
+                        color: 'white',
+                        fontWeight: 'bold',
+                        '& fieldset': {
+                          borderColor: 'white'
+                        },
+                        '&:hover fieldset': {
+                          borderColor: 'white'
+                        }
+                      }
+                    }}
+                  />
+                }
+              />
+              <Autocomplete
+                disablePortal
+                options={selectedProvince ? ecuadorProvinces[selectedProvince] : []}
+                value={selectedCity}
+                onChange={handleCityChange}
+                disabled={!selectedProvince}
+                sx={{ 
+                  width: '100%',
+                  borderRadius: '4px',
+                  color: 'white',
+                }}
+                renderInput={(params) => 
+                  <TextField 
+                    {...params} 
+                    label="City" 
+                    variant="outlined"
+                    sx={{
+                      '& .MuiInputLabel-root': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiOutlinedInput-root': {
+                        color: 'white',
+                        fontWeight: 'bold',
+                        '& fieldset': {
+                          borderColor: 'white'
+                        },
+                        '&:hover fieldset': {
+                          borderColor: 'white'
+                        }
+                      }
+                    }}
+                  />
+                }
+              />
+            </ListItemButton>
+          </ListItem>
+        </List>
       </Box>
-      <Divider />
-      <List>
-        <ListItem>
-          <Typography variant="h6" sx={{ textAlign: 'left', color: 'white', fontWeight: 'bold' }}>
-            Selection
-          </Typography>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton sx={{ 
-            flexDirection: 'column', 
-            alignItems: 'flex-start',
-            width: '100%',
-            px: 2
-          }}>
-            <Autocomplete
-              className='mb-2'
-              disablePortal
-              options={Object.keys(ecuadorProvinces)}
-              value={selectedProvince}
-              onChange={handleProvinceChange}
-              sx={{ 
-                width: '100%',
-                borderRadius: '4px',
-                color: 'white',
-                mb: 2
-              }}
-              renderInput={(params) => 
-                <TextField 
-                  {...params} 
-                  label="Province" 
-                  variant="outlined"
-                  sx={{
-                    '& .MuiInputLabel-root': {
-                      color: 'white',
-                      fontWeight: 'bold'
-                    },
-                    '& .MuiOutlinedInput-root': {
-                      color: 'white',
-                      fontWeight: 'bold',
-                      '& fieldset': {
-                        borderColor: 'white'
-                      },
-                      '&:hover fieldset': {
-                        borderColor: 'white'
-                      }
-                    }
-                  }}
-                />
-              }
-            />
-            <Autocomplete
-              disablePortal
-              options={selectedProvince ? ecuadorProvinces[selectedProvince] : []}
-              value={selectedCity}
-              onChange={handleCityChange}
-              disabled={!selectedProvince}
-              sx={{ 
-                width: '100%',
-                borderRadius: '4px',
-                color: 'white',
-              }}
-              renderInput={(params) => 
-                <TextField 
-                  {...params} 
-                  label="City" 
-                  variant="outlined"
-                  sx={{
-                    '& .MuiInputLabel-root': {
-                      color: 'white',
-                      fontWeight: 'bold'
-                    },
-                    '& .MuiOutlinedInput-root': {
-                      color: 'white',
-                      fontWeight: 'bold',
-                      '& fieldset': {
-                        borderColor: 'white'
-                      },
-                      '&:hover fieldset': {
-                        borderColor: 'white'
-                      }
-                    }
-                  }}
-                />
-              }
-            />
-          </ListItemButton>
-        </ListItem>
-      </List>
+
+      <Box sx={{ 
+        marginTop: 'auto', // Esto empuja el contenido hacia abajo
+        padding: 3,
+        background: 'rgba(33, 150, 243, 0.9)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.2)'
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 3, 
+          justifyContent: 'center',
+          mb: 3
+        }}>
+          <IconButton 
+            href="https://github.com/aszurita" 
+            target="_blank"
+            sx={{ 
+              color: 'white',
+              transform: 'scale(1.5)'
+            }}
+          >
+            <GitHubIcon fontSize="large" />
+          </IconButton>
+          <IconButton 
+            href="https://www.linkedin.com/in/angelo-saul-zurita-guerrero/" 
+            target="_blank"
+            sx={{ 
+              color: 'white',
+              transform: 'scale(1.5)'
+            }}
+          >
+            <LinkedInIcon fontSize="large" />
+          </IconButton>
+        </Box>
+
+        <Typography sx={{ 
+          textAlign: 'center',
+          color: 'white',
+          fontSize: '1rem',
+          fontWeight: 800
+        }}>
+          Design by Angelo Zurita
+        </Typography>
+      </Box>
     </Box>
   );
 
@@ -433,7 +445,10 @@ function App(props: Props) {
           flexGrow: 1,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           marginTop: { xs: '64px', sm: 0 },
-          overflow: 'auto'
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh'
         }}
       >
         <Box sx={{ width: '100%', bgcolor: 'white', p: { xs: 0, sm: 2 } }}>
@@ -475,7 +490,6 @@ function App(props: Props) {
             </Box>
           </Box>
         </Box>
-
         <Box sx={{ p: { xs: 2, sm: 5 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
             <Box sx={{ 
@@ -491,8 +505,8 @@ function App(props: Props) {
               width: '100%'
             }}>
               <LineChartWeather 
-                latitude={weatherData?.coordinates.latitude ?? -2.1962} 
-                longitude={weatherData?.coordinates.longitude ?? -79.8862} 
+                latitude={weatherData?.coordinates.latitude || -2.1962} 
+                longitude={weatherData?.coordinates.longitude || -79.8862} 
               />
             </Box>
           </Box>
@@ -520,6 +534,50 @@ function App(props: Props) {
               />
             )}
           </Box>
+        </Box>
+
+        <Box
+          sx={{ 
+            mt: 'auto',
+            py: 3,
+            px: 2,
+            bgcolor: '#1976d2',
+            color: 'white',
+            textAlign: 'center',
+            borderTop: '1px solid rgba(255, 255, 255, 0.12)'
+          }}
+        >
+          <Container maxWidth="lg">
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 2
+            }}>
+              <Typography variant="body2" sx={{ fontWeight: 800 }}>
+                © {new Date().getFullYear()} Weathero. Todos los derechos reservados.
+              </Typography>
+              
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 3,
+                alignItems: 'center' 
+              }}>
+                <IconButton 
+                  href="https://github.com/aszurita" 
+                  target="_blank"
+                  sx={{ color: 'white' }}
+                >
+                  <GitHubIcon />
+                </IconButton>
+                <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255, 255, 255, 0.3)' }} />
+                <Typography variant="body2" sx={{ fontWeight: 800 }}>
+                  API powered by OpenWeatherMap and Open Meteo
+                </Typography>
+              </Box>
+            </Box>
+          </Container>
         </Box>
       </Box>
     </Box>

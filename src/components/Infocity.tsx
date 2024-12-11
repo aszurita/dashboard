@@ -1,5 +1,4 @@
 import { Box, Card, Typography, Grid } from '@mui/material';
-import ThermostatIcon from '@mui/icons-material/Thermostat';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import AirIcon from '@mui/icons-material/Air';
 import CompressIcon from '@mui/icons-material/Compress';

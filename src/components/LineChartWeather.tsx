@@ -15,12 +15,12 @@ interface WeatherData {
   precipitation_probability: number[];
 }
 
-interface Props {
+interface LineChartWeatherProps {
   latitude: number;
   longitude: number;
 }
 
-export default function LineChartWeather({ latitude, longitude }: Props) {
+export default function LineChartWeather({ latitude, longitude }: LineChartWeatherProps) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [dataType, setDataType] = useState<string>('humidity');
 
@@ -53,7 +53,7 @@ export default function LineChartWeather({ latitude, longitude }: Props) {
   }, [latitude, longitude]);
 
   const handleDataTypeChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     newDataType: string,
   ) => {
     if (newDataType !== null) {
@@ -94,6 +94,7 @@ export default function LineChartWeather({ latitude, longitude }: Props) {
 
   const dataConfig = getDataConfig();
   const hours = Array.from({ length: 24 }, (_, i) => i);
+
 
   return (
     <Paper sx={{ 

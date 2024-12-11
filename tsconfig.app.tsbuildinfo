@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/forecastbuttons.tsx","./src/components/forecasttable.tsx","./src/components/infocity.tsx","./src/components/linechartweather.tsx","./src/components/tableweather.tsx","./src/interface/item.tsx"],"version":"5.6.3"}

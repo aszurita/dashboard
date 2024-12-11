@@ -3,6 +3,7 @@ import { Box, Button, Typography } from '@mui/material';
 
 interface ForecastData {
   dt: number;
+  dt_txt: string;
   main: {
     temp: number;
     humidity: number;
@@ -11,7 +12,13 @@ interface ForecastData {
     description: string;
     icon: string;
   }>;
-  dt_txt: string;
+  clouds: {
+    all: number;
+  };
+  wind: {
+    speed: number;
+    deg: number;
+  };
 }
 
 interface ForecastButtonsProps {
