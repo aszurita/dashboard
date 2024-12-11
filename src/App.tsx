@@ -110,6 +110,38 @@ interface ForecastData {
   };
 }
 
+const Clock = () => {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <Box sx={{ 
+      display: 'flex', 
+      alignItems: 'center',
+      backgroundColor: 'rgba(33, 150, 243, 0.1)',
+      padding: '8px 16px',
+      borderRadius: '12px',
+      marginRight: 2
+    }}>
+      <Typography sx={{ 
+        fontWeight: 600,
+        fontSize: { xs: '1rem', sm: '1.25rem' },
+        color: '#2196f3',
+        fontFamily: 'monospace'
+      }}>
+        {time.toLocaleTimeString()}
+      </Typography>
+    </Box>
+  );
+};
+
 function App(props: Props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -475,18 +507,26 @@ function App(props: Props) {
                 Where the weather comes to life with accurate, up-to-the-minute data.
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <img src={ubication} alt="Logo" style={{ width: '30px', height: '30px' }} />
-              <Typography variant="h6" sx={{ 
-                fontWeight: 600,
-                fontSize: { xs: '1rem', sm: '1.25rem' }
-              }}>
-                {selectedProvince 
-                  ? selectedCity 
-                    ? `${selectedProvince}, ${selectedCity}`
-                    : `${selectedProvince} (Select a city)`
-                  : 'Select a province'}
-              </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              flexWrap: { xs: 'wrap', md: 'nowrap' },
+              gap: 2
+            }}>
+              <Clock />
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <img src={ubication} alt="Logo" style={{ width: '30px', height: '30px' }} />
+                <Typography variant="h6" sx={{ 
+                  fontWeight: 600,
+                  fontSize: { xs: '1rem', sm: '1.25rem' }
+                }}>
+                  {selectedProvince 
+                    ? selectedCity 
+                      ? `${selectedProvince}, ${selectedCity}`
+                      : `${selectedProvince} (Select a city)`
+                    : 'Select a province'}
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Box>
